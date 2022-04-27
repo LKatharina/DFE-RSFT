@@ -30,7 +30,7 @@ computeBeliefs = function(ss,xh,yh,pxh,xl,yl,pxl,b,start,ntrials, nbetadraw = 80
   data[,c("bxh","byh","bxl","byl") := lapply(.SD,round,digits = 3), .SDcols = c("bxh","byh","bxl","byl")]
   # id_binom: id für eine mögliche Kombination aus xh und xl Ziehungen, insgesamt gibt es alle möglichen Kombinationen
   # pro id_binom (Kombination) werden dann nbetadraw Beliefs aus der Betaverteilung gezogen = id_betadraw gibt die Ziehung pro
-  # Kombination (id_binom) an.
+  # Kombination (id_binom) an. nbetadraw * Kombinationen von Gambles
   
   # Objective optimal model
   rsft_dfd <- hm1988(
@@ -71,7 +71,7 @@ computeBeliefs = function(ss,xh,yh,pxh,xl,yl,pxl,b,start,ntrials, nbetadraw = 80
   sim = merge(data,rsft_dfe_sim, by = "nr")
   sim = merge(sim, rsft_dfd_sim, by = c("trial", "state"))
   sim = cbind(sim, rsft_dfe_sim[,.(prhv_belief,nr)]) # RSFT Lösung für Beliefs + sim zusammenfügen
-
+  sim[nr %in% sim[,sum(.N), by = nr][V1 != 9]$nr]
   # Probability to draw xh (xl) 1...ss times given the underlying distributions and the total number of draws ss.
   # Binominal distribution provides the probabilities of obtaining xh (xl). 
   binomh = dbinom(0:ss,ss,pxh)
