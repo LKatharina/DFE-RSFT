@@ -17,11 +17,12 @@ source("functions/function-set-bayes.R")
 d = fread("../stimuli/list-stimuli-t3.csv")
 
 # Set Parameters ------------------------------------------------------------
-ss = c(3,10)
+ss = c(3) # c(3, 10)
 parallel = T
 
 # Dataset -------------------------------------------------------------------
 d = merge(d,d[,ss, by = id], by=c("id"))
+d <- d[id %in% 1:500] # change this!!
 d[, id := as.character(id)]
 d[, samplinggroup := as.character(ss)]
 
@@ -55,4 +56,4 @@ if (parallel) {
 }
 
 
-saveRDS(sim,"../stimuli/list-stimuli-t3-predictions.rds")
+saveRDS(sim, paste0("../stimuli/list-stimuli-t3-predictions",min(d$id),".rds"))
