@@ -1,0 +1,126 @@
+{% extends "rsft_dfe_experiment/Page.html" %}
+{% load otree static %}
+
+
+{% block content %}
+  {% if player.phase == "familiarization" %}
+    <h3>Learning Probabilities</h3>    
+    <p>Your first task is learning how likely the points of the options are. You will know the point amount, but not their probability. To learn the probability, you can <b>click on an option</b>. After the click, one of the points that the option offers, will be drawn according to its hidden probability. If the hidden probability for 7 points was 50%, then in half of the clicks the outcome 7 will appear, for instance.
+
+    <h3>Example for Learning Probabilities</h3>
+    <p>This is an example to get to know the task: you see two options, the points they offer, but not the probabilities. Please click on the options and observe the outcome to learn how likely it is.</p>
+  {% else %}
+    <h3> block {{ round_number }} of 15 - Learn Probabilities</h3>
+  {% endif %}
+
+
+  <div id="rsft-" class="hidden" style="text-align: center;">
+      <span style="font-size: 28px;">
+            We will move on now
+      </span>
+  </div>
+
+  <div class = "row" id="hide-options">
+    <button type="button" id = "button1" value={{ stimulus_position.0 }} class="option rsft-btn-choices">
+      <span class = "rsft-span-choices">
+        <div class = "{{ img1 }} sample_condition_{{ sample_condition }} sprite" id = "option1">
+        </div>
+      </span>
+    </button>
+      
+    <button type="button" id = "button2" value={{ stimulus_position.1 }} class="option rsft-btn-choices">
+      <span class = "rsft-span-choices">
+        <div class = "{{ img2 }} sample_condition_{{ sample_condition }} sprite" id = "option2">
+        </div>
+      </span>
+    </button>
+  </div>
+  <div class="row">
+  <span class = "hidden"><input class="otree-btn-next" type="submit" value=""></span>
+  </div>
+
+
+ <div class="hidden">
+  {% for field in form %}
+    {% formfield field %}
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+{% block scripts %}
+  <script>
+
+  /* Variables for this block defined in pages.py*/
+    var stimulus_position = {{ stimulus_position }},
+      num_trials = {{ Constants.num_samples_per_option }},
+      state = {{ state|json }},
+      outcomes = {{ outcomes }},
+      budget = {{ budget|json }},
+      xmin = - {{ max_earning|json }},
+      xmax = {{ max_earning|json }};
+      dfe_condition = {{ dfe_condition|json }};
+    var direction = outcomes[0][0] < 0 ? -1 : 1;
+
+    /* Variables that will be set on this html page */
+    var trial = 1,
+        clicks = [1,1],
+        rt_end = 0,
+        rt_start = 0;
+
+    if (dfe_condition) {
+      /* ----------------------------------------------------------------------
+      Next, we define a function to be executed every time a user clicks on the  button  which is called .rsft-btn-choice  */
+      $('.rsft-btn-choices').click(function () {
+
+          /* Calculate RT, store in formfield 'sample_rt_ms#', which we have defined in models.py */
+          rt_end = window.performance.now();
+          $('#id_sample_rt_ms' + (trial)).val(Math.round(rt_end - rt_start));
+
+          /* Get choice, and store in formfield 'sample#' which we have defined in models.py
+          choice is de-randomized: 0 = safe option, 1 = risky option */
+          var choice = $(this).val();
+          $('#id_sample' + trial).val(choice);        
+
+          /* Get pre-drawn outcome given choice and de-randomized position. 
+          Note, position os a 0,1 indicator variable */
+          var choice_position = stimulus_position[choice];
+          outcome = outcomes[choice_position][clicks[choice] - 1];
+          /* Store in a formfield 'draw#' defined in models.py*/         
+          $('#id_draw' + (trial)).val(outcome);
+
+           /* On screen, show the outcome and hide the options */
+          hideActions();
+          var x = $(this);
+          showOutcome(x);
+
+          setTimeout(function () {
+            clicks.forEach(function(item, index, arr) {
+              if (item >= num_trials) { 
+                console.log("button = ", stimulus_position[index] + 1);
+                $("#button" + (stimulus_position[index] + 1)).hide();
+              };
+            });
+            
+            if (clicks.every(e => e >= num_trials)) {
+              console.log("click on next")
+              /*setTimeout(clickNext(), 4000);*/
+            }
+            hideOutcome(x);
+            showActions();
+            clicks[choice] += 1;
+            trial += 1;
+            rt_start = window.performance.now();
+          }, 1000);
+
+      });
+    }
+  </script>
+{% endblock %}
