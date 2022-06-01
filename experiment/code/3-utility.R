@@ -7,7 +7,7 @@
 pacman::p_load(data.table)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-sim <- readRDS("../stimuli/list-stimuli-t3-predictions-101-200.rds")
+sim <- readRDS("../stimuli/list-stimuli-t3-predictions.rds")
 
 sim <- as.data.table(sim)
 sim[, nr := 1:nrow(sim)]

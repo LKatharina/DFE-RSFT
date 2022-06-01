@@ -27,7 +27,7 @@ SESSION_CONFIGS = [
         num_demo_participants=4,
         participation_fee=6.46,
         app_sequence=[
-            'consent_page',
+           # 'consent_page',
             'rsft_dfe_experiment',
             #'survey'
             ],
