@@ -45,7 +45,7 @@ make_plot <- function(data) {
     facet_wrap(~trial+state, labeller = label_both, scale = "free_x") +
     ylab("Predicted Proportion of Risky Choices") +
     labs(title = "Environment",
-         subtitle = paste("Reach", data$b[1], "in 3 trials")) +
+         subtitle = paste("Reach", data$b[1], "in 3 trials", data$xh[1], data$pxh[1],";", data$xl[1], data$pxl[1])) +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_blank(),
           axis.ticks.x = element_blank())
