@@ -31,7 +31,6 @@ Self-defined styles
 
 .dialogue p {
   color: grey;
-  letter-spacing: .15em; /* Adjust as needed */
 }
 
 /* ---------------------------------------------------------------------------
@@ -48,27 +47,22 @@ div#checkdisplay {
 
 
 /* ---------------------------------------------------------------------------
-Classes for magnifying
+Classes for magnifying and making things smaller
 --------------------------------------------------------------------------- */
+.fs075, .fs075 p {
+  font-size:  75%;
+}
 .fs2, .fs2 p {
   font-size: 150%;
 }
-
 .fs3, .fs3 p {
   font-size: 300%;
 }
-
 .fs4, .fs4 p {
   font-size: 400%;
 }
-
 .fs5, .fs5 p {
   font-size: 500%;
-}
-
-
-.otree-title {
-  /*font-size: 1eM; */
 }
 
 
@@ -132,6 +126,8 @@ Page layout for the choice page(s)
 /* outcome feedback */
 .outcome {
   font-size: 1em;
+  color: black;
+  letter-spacing: 2px;
 }
 
 
@@ -235,7 +231,6 @@ Overall alignments (risky options)
 
 .rsft-btn-choices:hover:enabled,
 .rsft-btn-choices:active:hover {
-  /*background:   rgb(248,248,248);*/
   box-shadow: 3px 3px 5px rgb(220,220,220);
   cursor: pointer;
 }
@@ -380,19 +375,6 @@ Overall alignments (risky options)
   margin-top: 10%;
 }
 
-.clicks {
-  margin-top: 0;
-  margin-left: 0;
-  font-size: 1rem;
-  border-bottom: 1px solid orange;
-  border-top: 1px solid orange;
-  padding: 1vh 2vh 1vh 2vh;
-  color: rgb(80,80,80);
-  width: 100%;
-  text-align: center;
-  background-color: rgb(240,240,240);
-}
-
 .shadow {
   box-shadow: 1px 1px 1px rgb(220,220,220);
 }
@@ -403,6 +385,21 @@ Overall alignments (risky options)
 
 .round-edge {
   border-radius: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Sampling paradigm:  clicks remaining;
+-------------------------------------------------------------------------- */
+.clicks, .clicks span {
+  font-size: 0.75rem;
+}
+.clicks {
+  margin-top: 0;
+  margin-left: 0;
+  padding: 1vh 2vh 1vh 2vh;
+  color: rgb(80,80,80);
+  width: 100%;
+  text-align: center;
 }
 
 
@@ -763,7 +760,7 @@ table tr:nth-child(even) {
 
 
 /* ---------------------------------------------------------------------------
-Choice Screen: Trial Counter
+Choice Task: Trial/Choice Counter
 --------------------------------------------------------------------------- */
 /* The container/wrapper inside of which the trials are */
 .trial-container {
