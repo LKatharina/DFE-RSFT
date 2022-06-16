@@ -138,6 +138,7 @@ class choice_sample(Page):
       'dfe_condition': self.participant.vars['dfe_condition'],
       'sample_condition': int(self.participant.vars['dfe_condition']),
       'round_number': self.round_number - 1,
+      'samples_per_option': self.participant.vars['num_samples_per_option']
     })
     return context
 
