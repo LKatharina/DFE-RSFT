@@ -103,7 +103,7 @@
       rt_end = window.performance.now();
       $('#id_rt_ms' + (trial)).val( Math.round(rt_end - rt_start) );
 
-      var choice = $(this).val();
+      var choice_safe = $(this).val();
       var choice_position = stimulus_position[choice];
       $('#id_choice'+trial).val(choice);
       outcome = outcomes[choice_position][trial - 1];
