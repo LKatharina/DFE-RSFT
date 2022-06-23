@@ -22,6 +22,15 @@ utility_sampling = function(sim,w1,w2,w3){
   return(agg)
 }
 
+# Utility function for stimuli, for which the predictions are equal
+utility_equal = function(sim,w1,w2,w3){
+  sim[, u1 := as.numeric(( sum_belief > 0.5 & prhv_rsft > 0.5 ) | (sum_belief < 0.5 & prhv_rsft < 0.5))]
+  sim[, u3 := 2*abs(0.5 - prhv_rsft)]
+  agg = sim[, .(u1 = mean(u1), u2 = 1 - (abs(mean(sum_belief) - mean(prhv_rsft))), u3 = mean(u3)), by = c("id", "samplinggroup", "trial", "state")]
+  agg[, utility := c(w1,w2,w3) %*% c(u1,u2,u3)*(u1 > 0), by = c("id", "samplinggroup", "trial", "state")][order(-utility)]
+  return(agg)
+}
+
 # utility <- function(x,y){
 #   diff <- abs(x - y)
 #   dis <-  as.numeric(( x > 0.5 & y < 0.5 ) | (x < 0.5 & y > 0.5)) # 1 if true , 0 if false

@@ -4,6 +4,7 @@
 #
 ############################################################
 
+# ACHTUNG CODE ANPASSEN FüR TIMEHORIZON = 1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Notizen
 # Wahrscheinlichkeiten der 2 Optionen
 # k <- c(0.1,0.8,0.1) #c(pxHV, pyHV, 0, 0)
@@ -106,15 +107,18 @@ rsftModel <- function(xh,yh,xl,yl, pxh, pyh, pxl, pyl, goal, timeHorizon, start,
   growTree = function(outcomes, p, timeHorizon, start){
     results = vector("list", timeHorizon)
     results[[1]] = rbind(outcomes + start, p)
-
-    for(t in 2:timeHorizon) {
-      states = NULL
-      for(i in results[[t-1]][1,]){
-        states = c(states, (i + outcomes))
+    
+    if(timeHorizon > 1){
+      for(t in 2:timeHorizon) {
+        states = NULL
+        for(i in results[[t-1]][1,]){
+          states = c(states, (i + outcomes))
+        }
+        probStates = rep(p, length(outcomes)^(t-1))
+        results[[t]] = rbind(states, probStates)
       }
-      probStates = rep(p, length(outcomes)^(t-1))
-      results[[t]] = rbind(states, probStates)
     }
+    
     return(results)
   }
 
@@ -192,20 +196,22 @@ rsftModel <- function(xh,yh,xl,yl, pxh, pyh, pxl, pyl, goal, timeHorizon, start,
   
   # function delete impossible states --------------------------------------------
   deleteImpossible = function(dt){
-    for(i in 2:timeHorizon){
-      repeatestates = rep(dt[trial == i]$state, each = length(outcomes))
-      
-      if(sum(notzero == 0) == 2){
-        compare = rep(dt[trial == i]$state, each = length(outcomes)) - outcomes
-      } else {
-        compare = rep(dt[trial == i]$state, each = length(outcomes)) - originaloutcomes
+    if(timeHorizon > 1){
+      for(i in 2:timeHorizon){
+        repeatestates = rep(dt[trial == i]$state, each = length(outcomes))
+        
+        if(sum(notzero == 0) == 2){
+          compare = rep(dt[trial == i]$state, each = length(outcomes)) - outcomes
+        } else {
+          compare = rep(dt[trial == i]$state, each = length(outcomes)) - originaloutcomes
+        }
+        
+        dcompare = data.table(trial = i, state = repeatestates, comparevalue = compare)
+        dcompare[,contain := ifelse(compare %in% alloptimal[trial == i-1,state],1,0)]
+        check = dcompare[,.(checkvalues = sum(contain)),by="state"]
+        vcheck = check[checkvalues != 0,state]
+        dt = dt[trial != i | trial == i & (state %in% vcheck)]
       }
-      
-      dcompare = data.table(trial = i, state = repeatestates, comparevalue = compare)
-      dcompare[,contain := ifelse(compare %in% alloptimal[trial == i-1,state],1,0)]
-      check = dcompare[,.(checkvalues = sum(contain)),by="state"]
-      vcheck = check[checkvalues != 0,state]
-      dt = dt[trial != i | trial == i & (state %in% vcheck)]
     }
     return(dt)
   }
@@ -240,7 +246,11 @@ rsftModel <- function(xh,yh,xl,yl, pxh, pyh, pxl, pyl, goal, timeHorizon, start,
   policyHV = makePoliciesLast(outcomes = outcomes, ERlasttrial = ERlastHV)
   policyLV = makePoliciesLast(outcomes = outcomes, ERlasttrial = ERlastLV)
   optimalPolicyLast = determineOptimal(policyHV = policyHV, policyLV = policyLV)
-  optBeforeLast = makePoliciesElse(optimalPolicy = optimalPolicyLast)
+  
+  if(timeHorizon > 1){
+    optBeforeLast = makePoliciesElse(optimalPolicy = optimalPolicyLast)
+  }
+  
 
 
   # Combined list with all trials and states --------------------------------------
@@ -248,22 +258,26 @@ rsftModel <- function(xh,yh,xl,yl, pxh, pyh, pxl, pyl, goal, timeHorizon, start,
   # make list with all policies
   lasttrial = rbind( optimalPolicyLast, policyHV, policyLV)
   alloptimal = vector("list", timeHorizon)
-
-  for(t in 1:(timeHorizon-1)){
-    alloptimal[[t]] = rbind(optBeforeLast[[t]])
+  
+  if(timeHorizon > 1){
+    for(t in 1:(timeHorizon-1)){
+      alloptimal[[t]] = rbind(optBeforeLast[[t]])
+    }
   }
-
+  
   alloptimal[[timeHorizon]] = rbind(lasttrial)
 
 
   # add states
   alloptimal[[1]] = as.data.table(t(rbind(trial = 1, state = start, alloptimal[[1]], ph = 1, pl = 1)))
-
+  
+  if(timeHorizon > 1){
   t = 2
    for(i in 1:(length(statesHV)-1)) {
     alloptimal[[t]] = as.data.table(t(rbind(trial = t, state = statesHV[[i]][1,],alloptimal[[t]],ph = statesHV[[i]][2,], pl = statesLV[[i]][2,])))
     t = t + 1
    }
+  }
   
   completealloptimal = rbindlist(alloptimal)
   completealloptimal = completealloptimal[order(trial,state),.(trial,state,policyHV,policyLV,ph,pl)]

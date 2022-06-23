@@ -16,7 +16,7 @@ library(scales)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # Load stimuli ----------------------------------------------------------------
 # Names of columns we would like to drop
-drop_these_columns <- c("budget", "state")
+drop_these_columns <- c("budget", "state","trial","start","type")
 # Load stimuli drop cols_to_drop
 d <- rbindlist(lapply(list.files('stimuli', full = TRUE), fread, drop = drop_these_columns, fill = TRUE))
 
