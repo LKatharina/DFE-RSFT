@@ -192,14 +192,17 @@ s = rbind(d,c)
 theplot = make_plot_critical(merge(sim[samplinggroup == "3"],unique(s[, id := as.character(id)]),by = c("id","trial","state")))
 ggsave(plot = theplot, filename = paste0("../figures/Stimuli.png"), width = 5, height = 5)
 
-
+#temp = s
 
 # Add constant to outcomes and trials left to avoid outcome repetitions across stimuli ===
 s[,nr := 1:.N]
 s[, changed := 0]
 
+# b = b + ntrials*val
+# b = b+((ntrials+1)-trial)*val
+# state = state + (trial-1)*val
 addval = function(val, x, data){
-  data[nr == x, ':=' (xh = xh+val, yh = yh+val, xl = xl+val, yl=yl+val, b = b+((ntrials+1)-trial)*val, changed = changed + val)]
+  data[nr == x, ':=' (xh = xh+val, yh = yh+val, xl = xl+val, yl=yl+val, b = b+ntrials*val, state = state + (trial-1)*val, changed = changed + val)]
   return(data)
 }
 
@@ -251,4 +254,5 @@ repeat{
 
 drops = c("id","utility","changed")
 s[, c(drops) := NULL]
+
 write.table(s, "../stimuli/Stimuli_allinfos.csv",sep=";", dec=".", row.names=F)
