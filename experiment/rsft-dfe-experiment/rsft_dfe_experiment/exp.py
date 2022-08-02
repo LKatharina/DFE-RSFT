@@ -1,6 +1,4 @@
-import numpy as np
-import csv
-import random
+import csv, numpy as np, random as rnd
 from collections.abc import Iterable
 from pathlib import Path # Requires Python v3.4 or newer
 
@@ -10,8 +8,6 @@ from pathlib import Path # Requires Python v3.4 or newer
 #   
 #   Change the sections 1., 2., and 3. below
 # ==========================================================================
-
-
 # CHANGE THIS
 # 1. General setup ----------------------------------------------------------
 phases = ["familiarization", "stimuli_easy", "attentioncheck_easy", "stimuli_medium", "attentioncheck_medium", "stimuli_hard", "attentioncheck_hard"]
@@ -159,7 +155,7 @@ class Phasemanager:
     self.doc = "Manage phases object holding the phases"
     phaseN = range(len(phases))
     # Randomization of the display order of the phases
-    phase_dict = dict(zip(shuffle_phases, random.sample(shuffle_phases, k = len(shuffle_phases))))
+    phase_dict = dict(zip(shuffle_phases, rnd.sample(shuffle_phases, k = len(shuffle_phases))))
     phase_order = list(map(phase_dict.get, phaseN, phaseN))
 
     self.phases = [phases[i] for i in phase_order]
@@ -169,7 +165,7 @@ class Phasemanager:
     self.trials_per_phase = [trials_per_phase[i] for i in phase_order]
 
     # Draw which block will be the bonus block
-    bonus_in_block = [random.sample(range(self.trials_per_phase[i]), k = bonus_trials[i]) for i in phase_order]
+    bonus_in_block = [rnd.sample(range(self.trials_per_phase[i]), k = bonus_trials[i]) for i in phase_order]
     is_bonus_trial = [[False] * i for i in self.trials_per_phase]
     for i in phase_order:
       for j in bonus_in_block[i]:
@@ -228,7 +224,7 @@ class Appearancemanager:
     # Stimuli: Display order of the stimuli
     self.stimulus_order = np.repeat([range(x) for x in PM.stimuli], PM.blocks, axis = 0).tolist()
     if (randomize_stimulus_order == 'block'):
-      self.stimulus_order = [random.sample(x, k=len(x)) for x in self.stimulus_order]
+      self.stimulus_order = [rnd.sample(x, k=len(x)) for x in self.stimulus_order]
     self.stimulus_order = [item for sublist in self.stimulus_order for item in sublist]
     
     # Action: Position of the action buttons (= stimuli) or of the keys
@@ -236,7 +232,7 @@ class Appearancemanager:
     num_phases = len(phases)
     self.action_positions = [list(range(x)) for x in np.repeat(numactions, num_rounds_per_phase)]
     if ('position/trial' in randomize_action):
-      self.action_positions = [random.sample(x, k=len(x)) for x in self.action_positions]
+      self.action_positions = [rnd.sample(x, k=len(x)) for x in self.action_positions]
     
     # Determine position and appearance of features ---------------------------
     numactions_long = np.repeat(numactions, num_rounds_per_phase)
@@ -244,7 +240,7 @@ class Appearancemanager:
     numfeatures_long = [item for sublist in numfeatures_long for item in sublist] # this is just to flatten it to one vector
     self.feature_appearances = [[list(range(numfeatures_long[i][0]))] * numactions_long[i] for i in range(num_rounds)] # todo: this only works if feature.0 and feature.1 have the same number of values!!
     if ('appearance/trial' in randomize_feature):
-      self.feature_appearances = [[random.sample(range(numfeatures_long[i][0]), k = numfeatures_long[i][0])] * numactions_long[i] for i in range(num_rounds)]
+      self.feature_appearances = [[rnd.sample(range(numfeatures_long[i][0]), k = numfeatures_long[i][0])] * numactions_long[i] for i in range(num_rounds)]
 
   def get_stimuli(self, round_number, phase_number):
     i = self.stimulus_order[round_number-1]
