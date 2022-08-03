@@ -1,0 +1,37 @@
+{{ include C.PAGE_TEMPLATE }}
+
+{{ block title }}
+  Task Instructions
+{{ endblock }}
+
+{{ block content }}
+<p>
+  Below you see one example option. This example option returns 7 points with a {{ if participant.dfe_condition }} hidden {{ endif }} probability of {{ if participant.dfe_condition }} <i>P</i> {{ else }} 20% {{ endif }} and 5 points  with a {{ if participant.dfe_condition }} hidden {{ endif }} probability {{ if participant.dfe_condition }} <i>1 - P</i>{{ else }} 80%{{ endif }}. For instance, if 7 points have a {{ if participant.dfe_condition }} hidden {{ endif }} probability of 20% this means in 20 of 100 clicks the option returns 7 and in the remaining 80 of 100 clicks it returns 5, in the expectation. The probabilities remain constant. During the task you will see two options.
+</p>
+
+<div class = 'center'><img src='{% static "img/instr2_dfe.png" %}'/ width = '20%'></div>
+
+
+<p>
+  On a first page, you will see the options{{ if participant.dfe_condition }}.
+    Click {{ C.NUM_SAMPLES_PER_OPTION }} times on each option to learn about the hidden probabilities of the outcomes. Clicking on an option causes the clicked option to draw points according to the hidden probabilities. 
+  {{ else }}
+     and the associated probabilities of the options' outcomes to familiarize yourself with the available options.
+  {{ endif }}
+    You do not accumulate any points here.
+</p>
+
+<p>
+  On the next page, you will see the threshold that you have to reach in {{ C.NUM_TRIALS }} choices. Clicking on the option causes them to draw points according to the probabilities, and now you will accumulate points. The options will not change until you used up all {{ C.NUM_TRIALS }} clicks and have or have not reached the threshhold.
+</p>
+
+
+<h3>Comprehension Check</h3>
+Check your understanding of the task by answering these questions correctly:
+{{ formfields }}
+
+{{ next_button }}
+
+{{ endblock }}
+
+

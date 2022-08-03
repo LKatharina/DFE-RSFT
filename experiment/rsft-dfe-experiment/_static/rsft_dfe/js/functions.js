@@ -64,7 +64,7 @@ function set_state(diff, state) {
         }
     }
     );
-}
+};
 
 function draw_trials(x) {
   $.each(Array(x), function(i) {
