@@ -34,7 +34,7 @@ class C(BaseConstants):
   PLAYERS_PER_GROUP = None # do we group players? Usually None means not
   NUM_FAMILIARIZATION_ROUNDS = 1 # how many times rounds are familiarization?
   NUM_REPETITIONS = 1 # how many repetitions of stimuli?
-  NUM_SAMPLES_PER_OPTION = 3 #how manys amples per option
+  NUM_SAMPLES_PER_OPTION = [3,10] #how many samples per option by sampling condition
   NUM_TRIALS = 3 # in the RSFT-choice, how many trials?
   NUM_ONESHOT = 0 # how many 1-choice trials?
   NUM_MULTITRIAL = NUM_REPETITIONS + NUM_FAMILIARIZATION_ROUNDS  
@@ -51,16 +51,24 @@ class Subsession(BaseSubsession):
 
 def creating_session(subsession):
   # rounds are subsessions: a round is a subsession
-  dfe_conditions = itertools.cycle([True, False])
+  # conditions: dfe (small-no probs (0), large-no probs (1), small-uncertainty (2), large-uncertainty (3)), dfd (4)
+  conditions = itertools.cycle([0, 1, 2, 3, 4])
+  sampling_conditions =  [C.NUM_SAMPLES_PER_OPTION[0],
+                                          C.NUM_SAMPLES_PER_OPTION[1],
+                                          C.NUM_SAMPLES_PER_OPTION[0],
+                                          C.NUM_SAMPLES_PER_OPTION[1],
+                                          0]
+  format_conditions = ["dfe_np", "dfe_np", "dfe", "dfe", "dfd"] # dfe_np = hidden probabilities, dfe = hidden probabilities and outcomes,  dfd = probabilities and outcomes described
   if subsession.round_number == 1:
     for p in subsession.get_players():
       participant = p.participant
       # for testing set this to true
-      participant.dfe_condition = next(dfe_conditions)
+      participant.condition = next(conditions)
+      participant.num_samples = sampling_conditions[participant.condition]
+      participant.format_condition = format_conditions[participant.condition]
       participant.num_blocks = 999
       participant.PM = exp.Phasemanager(exp.phases, exp.stimuli, exp.blocks, exp.trials)
       participant.AM = exp.Appearancemanager(participant.PM, exp.filepaths, exp.numfeatures, exp.numactions, exp.randomize_feature, exp.randomize_action, exp.randomize_stimulus_order)
-
   for p in subsession.get_players():
     participant = p.participant
     round_number = subsession.round_number
@@ -101,7 +109,7 @@ def creating_session(subsession):
       participant.decision_number = [None] * n
       participant.outcomes = [None] * n
       participant.sampling_outcomes = [None] * n
-      participant.num_samples_per_option = C.NUM_SAMPLES_PER_OPTION
+
     participant.stimulus_position[round_number] = stimulus_position
 
     # Define the names of the sprites for the images
@@ -114,7 +122,7 @@ def creating_session(subsession):
     if (phase in exp.phases):
       outcomes_orig_position = [draw_outcomes(x, C.NUM_TRIALS) for x in participant.AM.get_stimuli(round_number, phase_number)[ :2]]
       participant.outcomes[round_number] = [outcomes_orig_position[i] for i in stimulus_position]
-      sampling_outcomes_orig_position = [draw_outcomes(x, C.NUM_SAMPLES_PER_OPTION) for x in participant.AM.get_stimuli(round_number, phase_number)[ :2]]
+      sampling_outcomes_orig_position = [draw_outcomes(x, participant.num_samples) for x in participant.AM.get_stimuli(round_number, phase_number)[ :2]]
       participant.sampling_outcomes[round_number] = [sampling_outcomes_orig_position[i] for i in stimulus_position]
     maxx = max([max(list(map(abs, stimuli[i]))) for i in [0,1]])
     max_earnings = max(maxx * (C.NUM_TRIALS), p.budget)
@@ -172,10 +180,10 @@ def make_q(key = None):
     #   [1, "True answer"], [2, "Wrong answer"], [3, "Wrong answer"]]
   quiz = dict(
     q_task = ['What will your task be?',
-      [1, 'Chose the best option to reach a threshold.'],
-      [2, 'Chose the best threshold among two.'],
-      [3, 'Chose the best of 3 options A, B, C.']],
-    q_trials = ['How often can you chose until your point total should have reached the threshold?',
+      [1, 'Choose the best option to reach a threshold.'],
+      [2, 'Choose the best threshold among two.'],
+      [3, 'Choose the best of 3 options A, B, C.']],
+    q_trials = ['How often can you choose until your point total should have reached the threshold?',
       [1, str(C.NUM_TRIALS) + " choices."],
       [2, "10 choices."],
       [3, str(C.DURATION) + " choices."]],
@@ -213,8 +221,12 @@ def make_q(key = None):
 # Answer options switch based on 
 def q_task_choices(player):
   choices = make_q()['q_task'][1:]
-  if player.participant.dfe_condition == True:
+  if player.participant.format_condition == "dfe_np":
     choices[0][1] = 'Learn about probabilities. ' + choices[0][1]
+    choices[1][1] = 'Learn about thresholds. ' + choices[1][1]
+    choices[2][1] = 'Learn about options. ' + choices[2][1]
+  if player.participant.format_condition == "dfe":
+    choices[0][1] = 'Learn about points and probabilities. ' + choices[0][1]
     choices[1][1] = 'Learn about thresholds. ' + choices[1][1]
     choices[2][1] = 'Learn about options. ' + choices[2][1]
   rnd.shuffle(choices)
@@ -222,9 +234,12 @@ def q_task_choices(player):
 
 def q_view_choices(player):
   choices = make_q()['q_view'][1:]
-  if player.participant.dfe_condition == True:
-    choices[0][1] = 'Learn about the probabilities of each option by ' + str(C.NUM_SAMPLES_PER_OPTION) + " draws from each option."
-    choices[1][1] = 'Learn about the probabilities of each option by ' + str(C.NUM_SAMPLES_PER_OPTION) + " draws from both options."
+  if player.participant.format_condition == "dfe_np":
+    choices[0][1] = 'Learn about the probabilities of each option by ' + str(player.participant.num_samples) + " draws from each option."
+    choices[1][1] = 'Learn about the probabilities of each option by ' + str(player.participant.num_samples) + " draws from both options."
+  if player.participant.format_condition == "dfe":
+    choices[0][1] = 'Learn about the points and the probabilities of each option by ' + str(player.participant.num_samples) + " draws from each option."
+    choices[1][1] = 'Learn about the points and the probabilities of each option by ' + str(player.participant.num_samples) + " draws from both options."
   rnd.shuffle(choices)
   return choices
 
@@ -234,7 +249,9 @@ def q_view_choices(player):
 ##############################################################################
 class Player (BasePlayer):
   # prolificid = models.StringField(doc = "ID of the survey provider")
-  dfe_condition = models.BooleanField(doc = "0 = description, 1 = experience")
+  condition = models.FloatField(doc = "0 = dfe_np-small, 1 = dfe_np-large, 2 = dfe-small, 3 = dfe-large, 4 = description")
+  format_condition = models.FloatField(doc = "dfe_np = dfe with hidden probabilities, 1 = dfe with hidden probabilities and outcomes, 2 = dfd")
+  num_samples = models.FloatField(doc = "3 = small sample (3 per option), 10 = large sample (10 per option), 0 = dfd")
   # Comprehension question fields
   # the name of the question field MUST equal the string ("s" in make_q("s"))
   # and the string must be defined in the make_q() function above
@@ -314,6 +331,7 @@ class Player (BasePlayer):
   draw18 = make_sample_state_field(18)
   draw19 = make_sample_state_field(19)
   draw20 = make_sample_state_field(20)
+  draw21 = make_sample_state_field(21)
   sample_rt_ms1 = make_sample_rt_field(1)
   sample_rt_ms2 = make_sample_rt_field(1)
   sample_rt_ms3 = make_sample_rt_field(1)
@@ -334,6 +352,7 @@ class Player (BasePlayer):
   sample_rt_ms18 = make_sample_rt_field(1)
   sample_rt_ms19 = make_sample_rt_field(1)
   sample_rt_ms20 = make_sample_rt_field(1)
+  sample_rt_ms21 = make_sample_rt_field(1)
   choice_safe1 = make_choice_field(1)
   choice_safe2 = make_choice_field(2)
   choice_safe3 = make_choice_field(3)
@@ -391,9 +410,11 @@ def get_vars(player):
   participant = player.participant
   return dict(
     num_blocks = C.NUM_ROUNDS - C.NUM_FAMILIARIZATION_ROUNDS,
-    dfe_condition = participant.dfe_condition,
-    dfe_condition_num = int(participant.dfe_condition),
-    num_samples = C.NUM_SAMPLES_PER_OPTION,
+    condition = participant.condition,
+    condition_num = int(participant.condition),
+    format_condition = participant.format_condition,
+    num_samples = participant.num_samples,
+    #int(C.NUM_SAMPLES_PER_OPTION[participant.sampling_condition]),
     num_trials = C.NUM_TRIALS,
     img1 = participant.img1[n],
     img2 = participant.img2[n],
@@ -451,7 +472,8 @@ class instructions1(Page):
     return dict(form_fields = form_fields)
   def error_message(player, values):
     get_errors(player, values)
-
+  def vars_for_template(player):
+    return get_vars(player)
 
 class instructions2(Page):
   def is_displayed(player):
@@ -461,6 +483,9 @@ class instructions2(Page):
     return ["q_outcomes", "q_samples", "q_view", "q_reach"]
   def error_message(player, values):
     get_errors(player, values)
+  def vars_for_template(player):
+    return dict(image_path = "img/" + player.participant.format_condition + "/instr2.png")
+
 
 # class newblock(Page):
 #   def is_displayed(player):
@@ -473,10 +498,10 @@ class instructions2(Page):
 class sample(Page):
   @staticmethod
   def is_displayed(player):
-    return player.participant.dfe_condition
+    return player.participant.condition < 4
   form_model = 'player'
   def get_form_fields(player):
-    n = (C.NUM_SAMPLES_PER_OPTION + 1) * C.NUM_ACTIONS
+    n = (player.participant.num_samples + 1) * C.NUM_ACTIONS
     samplefields = ['sample{}'.format(i) for i in range(1, n)]
     drawfields = ['draw{}'.format(i) for i in range(1, n)]
     samplertfields = ['sample_rt_ms{}'.format(i) for i in range(1, n)]
@@ -484,7 +509,7 @@ class sample(Page):
   def vars_for_template(player):
     v =  get_vars(player)
     v.update(
-      outcomes = player.participant.outcomes[player.round_number],
+      outcomes = player.participant.sampling_outcomes[player.round_number],
       successes = get_last_success(player),
       num_rounds = C.NUM_ROUNDS,
       round_number = player.round_number - 1)
@@ -522,8 +547,8 @@ class choice(Page):
 #       }
 
 page_sequence = [
-  # instructions1,
-  # instructions2,
+  #instructions1,
+  #instructions2,
   # newblock,
   sample,
   choice

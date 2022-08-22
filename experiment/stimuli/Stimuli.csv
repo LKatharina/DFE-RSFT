@@ -10,3 +10,5 @@ x1HV,x2HV,p1HV,p2HV,x1LV,x2LV,p1LV,p2LV,budget,start,state,trial,type
 7,1,0.7,0.3,6,5,0.2,0.8,16,0,6,2,2 safe re control
 11,4,0.5,0.5,9,3,0.75,0.25,19,0,11,2,2 risky nore control
 13,4,0.3,0.7,7,6,0.7,0.3,23,0,14,3,3 risky nore control
+2,1,0.1,0.9,5,6,0.2,0.8,15,0,10,3,attention
+3,4,0.8,0.2,10,12,0.7,0.3,14,0,4,2,attention

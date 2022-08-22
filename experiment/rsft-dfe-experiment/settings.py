@@ -4,7 +4,7 @@ from os import environ
 # Default configs will be inherited by all other configs
 SESSION_CONFIG_DEFAULTS = dict(
     display_name="Study",
-    num_demo_participants=4,
+    num_demo_participants=5,
     real_world_currency_per_point=0.25,
     participation_fee=0.000,
     doc=""
@@ -58,7 +58,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Participant-specific fields accessible across blocks/trials/apps by e.g. player.participant.field_name
 PARTICIPANT_FIELDS = [
-    'dfe_condition',
+    'condition',
+    'sampling_condition',
+    'num_samples',
+    'format_condition',
     'num_blocks',
     'bonus_rounds',
     'stimulus_position',
@@ -74,3 +77,6 @@ PARTICIPANT_FIELDS = [
 ]
 
 SESSION_FIELDS = []
+
+
+DEBUG = False
