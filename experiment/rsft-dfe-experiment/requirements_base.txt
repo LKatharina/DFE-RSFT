@@ -2,4 +2,7 @@
 numpy
 pandas
 otree>= 3.2.7
+ws4py
+requests
+
 
